@@ -1,5 +1,5 @@
 import re
-data = open('input.txt.txt').read().split("\n\n")
+data = open('input.txt').read().split("\n\n")
 keys = ('ecl', 'pid', 'eyr', 'hcl', 'byr', 'iyr', 'cid', 'hgt')
 
 
@@ -26,10 +26,12 @@ def old_case(data):
 
 
 def validate_height(_input):
+    expr_unit = "(cm|in)"
+    expr_value = "\d+(?=(cm|in))"
+
     try:
-        n = len(_input)
-        unit = _input[-2:]
-        value = int(_input[:(n - 2)])
+        unit = re.search(expr_unit, _input).group()
+        value = int(re.search(expr_value, _input).group())
     except:
         return False
 
