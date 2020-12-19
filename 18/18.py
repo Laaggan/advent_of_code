@@ -2,8 +2,14 @@ import copy
 import re
 from functools import reduce
 
+#solved
+small_input = "1 + 2 * 3 + 4 * 5 + 6"
+#solved
 small_input = "2 * 3 + (4 * 5)"
-basic_input = "1 + 2 * 3 + 4 * 5 + 6"
+#solved
+small_input = "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"
+#
+small_input = "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"
 
 
 def get_operator(_c):
@@ -11,6 +17,7 @@ def get_operator(_c):
         return lambda a, b: a + b
     elif _c == '*':
         return lambda a, b: a * b
+
 
 def sol_basic(_input):
     prev = []
@@ -34,6 +41,19 @@ def find_first_right_bracket(_input):
         return i
     else:
         raise Exception("Didn't find a right bracket")
+
+
+def find_matching_parenthesis_in_string(_input):
+    left_brackets = []
+    sols = []
+    for i, c in enumerate(_input):
+        if c == '(':
+            left_brackets.append(i)
+        elif c == ')':
+            sols.append((left_brackets.pop(), i))
+        else:
+            pass
+        return sols
 
 
 def sol(_input):
