@@ -48,8 +48,10 @@ def sol(_input):
             prev.append(int(c))
             if len(prev) >= 2:
                 prev = [reduce(f, prev)]
+            i += 1
         elif bool(re.search("[*+]", c)):
             f = get_operator(c)
+            i += 1
         elif bool(re.search("[(]", c)):
             print(c[0])
             #local_ind = re.search("[)]", _input[i:]).start()
@@ -60,9 +62,8 @@ def sol(_input):
             sub_sol = sol(new_exprs)
             new_input = copy.deepcopy(_input)
             del new_input[i:(global_ind+1)]
-            new_input = _input[:i] + str(sub_sol) + _input[(global_ind+1):]
+            new_input = [*_input[:i], str(sub_sol), *_input[global_ind+1:]]
             _input = new_input
-        i += 1
     value = prev[0]
     return value
 
