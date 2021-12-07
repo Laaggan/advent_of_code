@@ -29,4 +29,23 @@ def star_1(draws, final_boards, masks):
                     return np.sum(final_boards[ind][mask != 1]) * draw
 
 
+def star_2(draws, final_boards, masks):
+    has_won = set(range(len(masks)))
+    for draw in draws:
+        masks[final_boards == draw] = 1
+        for ind, mask in enumerate(masks):
+            for i in range(5):
+                if np.sum(mask[i, :]) == 5:
+                    has_won.discard(ind)
+                    if len(has_won) == 0:
+                        return np.sum(final_boards[ind][mask != 1])*draw
+            for i in range(5):
+                if np.sum(mask[:, i]) == 5:
+                    has_won.discard(ind)
+                    if len(has_won) == 0:
+                        return np.sum(final_boards[ind][mask != 1])*draw
+    return -1
+
 print(star_1(draws, final_boards, masks))
+masks = np.zeros(final_boards.shape)
+print(star_2(draws, final_boards, masks))
