@@ -35,9 +35,11 @@ def decode_binary_string(binary_string):
 
 
 INPUT = 'D2FE28'
+# Example of a operator packet where length of subpackets is specified
 INPUT = '38006F45291200'
+# Example of a operator packet where number of upcoming subpackets is specified
 INPUT = 'EE00D40C823060'
-INPUT = '8A004A801A8002F478'
+#INPUT = '8A004A801A8002F478'
 
 binary_string = ''
 for c in INPUT:
@@ -58,47 +60,51 @@ def get_packet_version_and_type_id(i, packet_string):
 
 def parse_packet(i, packet_string):
     current_packet_length = 0
-    i, packet_version, type_id = get_packet_version_and_type_id(i, packet_string)
-
+    result_string = ''
     end_of_packet = False
     while not end_of_packet:
         end_of_packet = int(packet_string[i]) == 0
         i += 1
         current_packet_length += 1
+        result_string += packet_string[i:i + 4]
         value = decode_binary_string(packet_string[i:i + 4])
 
         i += 4
         current_packet_length += 4
         if end_of_packet:
             i += current_packet_length % LITERAL_GROUP_LENGTH
-    return i, packet_version, type_id
+    return i, packet_version, type_id, result_string
 
 i = 0
 decimal_result = []
-while i < len(binary_string):
-    if type_id == PacketTypes.LITERAL.value:
-        i, a, b = parse_packet(i, binary_string)
-    else:
-        i, a, b = get_packet_version_and_type_id(i, binary_string)
-        if int(binary_string[i]) == 0:
-            i += 1
-            len_packet_string = decode_binary_string(binary_string[i:i + 15])
-            i += 15
-            sub_packets = binary_string[i:i+len_packet_string]
 
-            j = 0
-            while j < len_packet_string:
-                j, a, b = parse_packet(j, sub_packets)
-            i += len_packet_string
 
+def parse_binary_input(i, binary_input):
+    while len(binary_input[i:]) > LITERAL_GROUP_LENGTH:
+        i, packet_version, type_id = get_packet_version_and_type_id(i, binary_input)
+        # This is the only case where we know exactly what to do
+        if type_id == PacketTypes.LITERAL.value:
+            i, a, b, result = parse_packet(i, binary_input)
+            print(decode_binary_string(result))
         else:
-            i += 1
-            num_sub_packets = decode_binary_string(binary_string[i:i + 11])
-            i += 11
+            if int(binary_input[i]) == 0:
+                i += 1
+                len_packet_string = decode_binary_string(binary_input[i:i + 15])
+                i += 15
+                sub_packets = binary_input[i:i+len_packet_string]
 
-            j = 0
-            for k in range(num_sub_packets):
-                j, a, b = parse_packet(j, binary_string[i:])
-            i += j
+                # So here we probably need to do recursion
+                j = 0
+                j, a, b = parse_binary_input(j, sub_packets)
+                i += len_packet_string
+            else:
+                i += 1
+                num_sub_packets = decode_binary_string(binary_input[i:i + 11])
+                i += 11
 
-    print(i)
+                j = 0
+                for k in range(num_sub_packets):
+                    j, a, b = parse_binary_input(j, binary_input[i+j:])
+                i += j
+
+parse_binary_input(i, binary_string)
