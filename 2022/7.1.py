@@ -22,18 +22,26 @@ $ ls
 8033020 d.log
 5626152 d.ext
 7214296 k"""
-# input = open("data/7_real_data.txt").read()
+input = open("data/7_real_data.txt").read()
 
-# commands = Enum("Commands", ["dir", "ls", "cd"])
-# Commands(Enum):
-#     dir = 
-
-structure = {}
+structure = []
 input = input.split("\n")
-current_directory = ""
-previous_dir = ""
+current_directory = None
+previous_dir = None
 
-# def traverse_files(text_in):
+def find_dir(arr: list[dict], current_directory: str, parent: str):
+    try:
+        for i, dir in enumerate(arr):
+            if (dir["dir"] == current_directory and dir["parent"] == parent):
+                return i, dir
+    except ValueError():
+        print("No matching value means something is wrong")
+
+def modify_dir(arr: list[dict], new_dir: dict):
+    i, _ = find_dir(arr, new_dir["dir"], new_dir["parent"])
+    arr.pop(i)
+    arr.insert(i, new_dir)
+
 iter = 0
 directory_stack = []
 while iter < len(input) - 1:
@@ -42,56 +50,59 @@ while iter < len(input) - 1:
     if (split_line[0] == "$"):
         if (split_line[1] == "cd"):
             if (split_line[2] == ".."):
-                directory_stack.pop()
-                current_directory = previous_dir
+                previous_dir = directory_stack.pop()
+                current_directory = directory_stack[-1]
                 iter += 1
             else:
-                directory_stack.append(split_line[2])
-                previous_dir = current_directory
+                previous_dir = directory_stack[-1] if len(directory_stack) > 0 else None
                 current_directory = split_line[2]
-                structure[current_directory] = {"dirs": [], "files": []}
+                directory_stack.append(current_directory)
+                structure.append({"dir": current_directory, "parent": previous_dir, "dirs": [], "files": [], "total_sum": 0})
                 iter += 1
         elif (split_line[1] == "ls"):
             iter = iter + 1
             while input[iter][0] != "$":
                 split_ls_line = input[iter].split(" ")
+                ind, dir = find_dir(structure, current_directory, previous_dir)
                 if (split_ls_line[0] == "dir"):
-                    structure[current_directory]["dirs"] = [split_ls_line[1], *structure[current_directory]["dirs"]]
+                    dir["dirs"] = [split_ls_line[1], *dir["dirs"]]
                 else:
                     size, name = split_ls_line
                     size = int(size)
-                    structure[current_directory]["files"] = [{"name": name, "size": size}, *structure[current_directory]["files"]]
+                    dir["files"] = [{"name": name, "size": size}, *dir["files"]]
+                modify_dir(structure, dir)
                 if iter >= len(input) - 1:
                     break
                 else:
                     iter += 1
 
-all_dirs = set([key for key in structure])
-visited = set()
-def recursive_summing(dir_key):
-    if visited == all_dirs:
-        return
+def recursive_summing(dir_key, parent):
+    i, dir = find_dir(structure, dir_key, parent)
+    if (len(dir["dirs"]) == 0):
+        if len(dir["files"]) > 0:
+            dir["total_sum"] = sum(map(lambda x: x["size"], dir["files"]))
+            modify_dir(structure, dir)
+            # structure[dir_key]["is_bottom_dir"] = True
+            return dir["total_sum"]
+        else:
+            return 0
     else:
-        visited.add(dir_key)
-
-    if (len(structure[dir_key]["dirs"]) == 0):
-        bottom_dir_sum = sum(map(lambda x: x["size"], structure[dir_key]["files"]))
-        structure[dir_key]["total_sum"] = bottom_dir_sum
-        structure[dir_key]["is_bottom_dir"] = True
-        return bottom_dir_sum
-    else:
-        structure[dir_key]["is_bottom_dir"] = False
+        # structure[dir_key]["is_bottom_dir"] = False
         total_sub_dir_sum = 0
-        for sub_dir in structure[dir_key]["dirs"]:
-            total_sub_dir_sum += recursive_summing(sub_dir)
+        for sub_dir in dir["dirs"]:
+            total_sub_dir_sum += recursive_summing(sub_dir, dir_key)
         
-        structure[dir_key]["total_sum"] = sum(map(lambda x: x["size"], structure[dir_key]["files"]))
-        structure[dir_key]["total_sum"] += total_sub_dir_sum
-        return structure[dir_key]["total_sum"]
+        if len(dir["files"]) > 0:
+            dir["total_sum"] = sum(map(lambda x: x["size"], dir["files"])) + total_sub_dir_sum
+        else:
+            dir["total_sum"] = total_sub_dir_sum
+        modify_dir(structure, dir)
+        return dir["total_sum"]
 
-recursive_summing("/")
-sizes_to_delete = sum([structure[key]["total_sum"] for key in structure if structure[key]["total_sum"] < 100000])
-dirs_to_delete = [key for key in structure if structure[key]["total_sum"] < 100000]
+recursive_summing("/", None)
+sizes_to_delete = sum([dir["total_sum"] for dir in structure if dir["total_sum"] < 100000])
+dirs_to_delete = [[dir["dir"] for dir in structure if dir["total_sum"] < 100000]]
 print(dirs_to_delete)
 print(sizes_to_delete)
-print(structure["/"]["total_sum"])
+_,root = find_dir(structure, "/", None)
+print(root["total_sum"])
