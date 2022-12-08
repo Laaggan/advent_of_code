@@ -1,4 +1,5 @@
 from enum import Enum
+import math
 input = """$ cd /
 $ ls
 dir a
@@ -105,4 +106,18 @@ dirs_to_delete = [[dir["dir"] for dir in structure if dir["total_sum"] < 100000]
 print(dirs_to_delete)
 print(sizes_to_delete)
 _,root = find_dir(structure, "/", None)
-print(root["total_sum"])
+
+used_size = root["total_sum"]
+free_size = 70000000 - used_size
+needed_size = 30000000 - free_size
+
+closest_to_needed = math.inf
+actual_sum = None
+structure.sort(key=lambda x: x["total_sum"])
+for dir in structure:
+    if (needed_size - dir["total_sum"]) < 0:
+        # closest_to_needed = needed_size - (free_size + dir["total_sum"])
+        actual_sum = dir["total_sum"]
+        break
+
+print(actual_sum)
