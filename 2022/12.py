@@ -19,12 +19,16 @@ data = data.split("\n")
 n, m = len(data), len(data[0])
 
 # Find start and end position
+possible_start_positions = []
 for i, line in enumerate(data):
     for j, c in enumerate(line):
         if (c == 'S'):
             start_pos = (i, j)
+            possible_start_positions.append((i, j))
         elif (c == 'E'):
             end_pos = (i, j)
+        elif (c == 'a'):
+            possible_start_positions.append((i, j))
 
 # translate into numeric
 numeric = [[0 for _ in range(m)] for _ in range(n)]
@@ -57,7 +61,6 @@ def calculate_node_number(i, j, n, m):
         raise
     return i * m + j
 
-# graph = [{str(a):{"neighbours": []}} for a in range(n*m)]
 nodes = {}
 graph = Graph()
 for a in range(n*m):
@@ -85,30 +88,21 @@ def distance(n1, n2):
         
 start_node = calculate_node_number(start_pos[0], start_pos[1], n, m)
 end_node = calculate_node_number(end_pos[0], end_pos[1], n, m)
-# path = list(astar.find_path(start=start_node, goal=end_node, neighbors_fnct=neighbors, distance_between_fnct=distance))
-# print(len(path)-1)
 
 result = find_path(graph, start_node, end_node)
-print(result)
-# print(path)
-# def calculate_row(k, n, m):
-#     return math.floor(k/m)
+print(result.total_cost)
 
-# def calculate_col(k, n, m):
-#     return (k % m) - 1
+min = math.inf
+end_node = calculate_node_number(end_pos[0], end_pos[1], n, m)
+for e, f in possible_start_positions:
+    start_node = calculate_node_number(e, f, n, m)
+    
+    try:
+        result = find_path(graph, start_node, end_node)
+    except:
+        continue
+    
+    if result.total_cost < min:
+        min = result.total_cost
+print(min)
 
-# inc = 0
-# pretty = [["." for _ in range(m)] for _ in range(n)]
-# for k in path:
-#     row = calculate_row(k, n, m)
-#     col = calculate_col(k, n, m)
-#     # pretty[row][col] = str(inc)
-#     # inc += 1
-#     pretty[row][col] = "*"
-
-# for i in range(n):
-#     temp = ""
-#     for j in range(m):
-#         temp += pretty[i][j]
-#     print(temp)
-# print(reduce(lambda a, b: a + b, pretty, ""))
