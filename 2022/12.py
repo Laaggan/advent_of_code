@@ -6,6 +6,7 @@
 from functools import reduce
 import astar
 import math
+from dijkstar import Graph, find_path
 
 data = """Sabqponm
 abcryxxl
@@ -58,15 +59,18 @@ def calculate_node_number(i, j, n, m):
 
 # graph = [{str(a):{"neighbours": []}} for a in range(n*m)]
 nodes = {}
+graph = Graph()
 for a in range(n*m):
     nodes[a] = {"neighbours": []}
 for i, line in enumerate(numeric):
     for j, x in enumerate(line):
         possible_points = generate_possible_point(i, j, n, m)
         seq_num = calculate_node_number(i, j, n, m)
+        graph.add_node(seq_num)
         for k, l in possible_points:
             if (numeric[k][l] - numeric[i][j] <= 1):
                 neigh_num = calculate_node_number(k, l, n, m)
+                graph.add_edge(seq_num, neigh_num, 1)
                 nodes[seq_num]['neighbours'].append(neigh_num)
                 nodes[seq_num]['row-col'] = (i, j)
 
@@ -81,9 +85,11 @@ def distance(n1, n2):
         
 start_node = calculate_node_number(start_pos[0], start_pos[1], n, m)
 end_node = calculate_node_number(end_pos[0], end_pos[1], n, m)
-path = list(astar.find_path(start=start_node, goal=end_node, neighbors_fnct=neighbors, distance_between_fnct=distance))
-print(len(path)-1)
+# path = list(astar.find_path(start=start_node, goal=end_node, neighbors_fnct=neighbors, distance_between_fnct=distance))
+# print(len(path)-1)
 
+result = find_path(graph, start_node, end_node)
+print(result)
 # print(path)
 # def calculate_row(k, n, m):
 #     return math.floor(k/m)
