@@ -83,25 +83,57 @@ def do_operation(operation, current_worry_level):
 def check_condition(condition, worry_level):
     return worry_level % condition == 0
 
-NUM_ROUNDS = 20
-NUM_MONKEYS = len(parsed_data)
-for i in range(NUM_ROUNDS):
-    for monkey_index in range(NUM_MONKEYS):
-        monkey = parsed_data[monkey_index]
-        for item in monkey["items"]:
-            new_worry_level = do_operation(monkey["operation"], item)
-            new_worry_level = floor(new_worry_level / 3)
-            condition = check_condition(monkey["condition"], new_worry_level)
+def solve_part_2():
+    NUM_ROUNDS = 10000
+    NUM_MONKEYS = len(parsed_data)
+    
+    big_mod = 1
+    for key in parsed_data:
+        big_mod *= parsed_data[key]["condition"]
 
-            if (condition):
-                send_to_monkey = monkey["true"]
-            else:
-                send_to_monkey = monkey["false"]
-            
-            parsed_data[monkey_index]["items_handled"] += 1
-            parsed_data[send_to_monkey]["items"].append(new_worry_level)
-        parsed_data[monkey_index]["items"] = []
+    for i in range(NUM_ROUNDS):
+        for monkey_index in range(NUM_MONKEYS):
+            monkey = parsed_data[monkey_index]
+            for item in monkey["items"]:
+                new_worry_level = do_operation(monkey["operation"], item)
+                new_worry_level = new_worry_level % big_mod
+                condition = check_condition(monkey["condition"], new_worry_level)
 
-handled_items_list = list(map(lambda x: parsed_data[x]["items_handled"], parsed_data))
-handled_items_list.sort(reverse=True)
-print(handled_items_list[:2][0]*handled_items_list[:2][1])
+                if (condition):
+                    send_to_monkey = monkey["true"]
+                else:
+                    send_to_monkey = monkey["false"]
+                
+                parsed_data[monkey_index]["items_handled"] += 1
+                parsed_data[send_to_monkey]["items"].append(new_worry_level)
+            parsed_data[monkey_index]["items"] = []
+
+    handled_items_list = list(map(lambda x: parsed_data[x]["items_handled"], parsed_data))
+    handled_items_list.sort(reverse=True)
+    print(handled_items_list[:2][0]*handled_items_list[:2][1])
+
+def solve_part_1():
+    NUM_ROUNDS = 20
+    NUM_MONKEYS = len(parsed_data)
+    for i in range(NUM_ROUNDS):
+        for monkey_index in range(NUM_MONKEYS):
+            monkey = parsed_data[monkey_index]
+            for item in monkey["items"]:
+                new_worry_level = do_operation(monkey["operation"], item)
+                new_worry_level = floor(new_worry_level / 3)
+                condition = check_condition(monkey["condition"], new_worry_level)
+
+                if (condition):
+                    send_to_monkey = monkey["true"]
+                else:
+                    send_to_monkey = monkey["false"]
+                
+                parsed_data[monkey_index]["items_handled"] += 1
+                parsed_data[send_to_monkey]["items"].append(new_worry_level)
+            parsed_data[monkey_index]["items"] = []
+
+    handled_items_list = list(map(lambda x: parsed_data[x]["items_handled"], parsed_data))
+    handled_items_list.sort(reverse=True)
+    print(handled_items_list[:2][0]*handled_items_list[:2][1])
+
+solve_part_2()
