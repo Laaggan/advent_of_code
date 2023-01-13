@@ -1,3 +1,4 @@
+from math import floor
 import matplotlib.pyplot as plt
 data = open("data/14_small_data.txt", 'r').read()
 data = open("data/14_real_data.txt", 'r').read()
@@ -61,30 +62,69 @@ def sand_move_logic(pebble, pebbles, walls):
         #This means that the pebble has stopped
         return new_pebble
 
-y_max = max(map(lambda x: x[1], walls))
+def get_y_max(walls):
+    return max(map(lambda x: x[1], walls))
 
-i = 0
-out_of_bounds = False
-while not out_of_bounds:
-    new_pebble = (500, 0)
-    while True:
-        returned_pebble = sand_move_logic(new_pebble, sand_pebbles, walls)
+def add_infinite_floor(walls, y_max):
+    #TODO: This 300 is just arbitrary and could probably be smaller
+    max_width = 300 + 2*y_max
+    for x in range(max_width):
+        walls.add((500 + (x - floor(max_width/2)), y_max + 2))
+    return walls
 
-        if (new_pebble == returned_pebble):
-            sand_pebbles.add(returned_pebble)
-            break
-        else:
-            new_pebble = returned_pebble
-            if (new_pebble[1] > y_max):
-                out_of_bounds = True
+def draw_state(walls, pebbles):
+    xs = [p[0] for p in walls]
+    ys = [p[1] for p in walls]
+    plt.scatter(xs, ys)
+    xs = [p[0] for p in pebbles]
+    ys = [p[1] for p in pebbles]
+    plt.scatter(xs, ys)
+    plt.gca().invert_yaxis()
+    plt.show()
+
+def solve_part_1():
+    y_max = get_y_max(walls)
+    i = 0
+    out_of_bounds = False
+    while not out_of_bounds:
+        new_pebble = (500, 0)
+        while True:
+            returned_pebble = sand_move_logic(new_pebble, sand_pebbles, walls)
+            if (new_pebble == returned_pebble):
+                sand_pebbles.add(returned_pebble)
                 break
-    i += 1
-    # print(len(sand_pebbles))
+            else:
+                new_pebble = returned_pebble
+                if (new_pebble[1] > y_max):
+                    out_of_bounds = True
+                    break
+        
+        i += 1
 
-print("final", len(sand_pebbles))
+    print("final", len(sand_pebbles))
 
-# xs = [p[0] for p in walls]
-# ys = [p[1] for p in walls]
-# plt.scatter(xs, ys)
-# plt.gca().invert_yaxis()
-# plt.show()
+def solve_part_2():
+    INITIAL_PEBBLE = (500, 0)
+    y_max = get_y_max(walls)
+    walls_with_floor = add_infinite_floor(walls, y_max)
+    
+    i = 0
+    room_is_full = False
+    while not room_is_full:
+        new_pebble = INITIAL_PEBBLE
+        while True:
+            returned_pebble = sand_move_logic(new_pebble, sand_pebbles, walls_with_floor)
+
+            if (new_pebble == returned_pebble):
+                sand_pebbles.add(returned_pebble)
+                if returned_pebble == INITIAL_PEBBLE:
+                    room_is_full = True
+                break
+            else:
+                new_pebble = returned_pebble        
+        i += 1
+    draw_state(walls_with_floor, sand_pebbles)
+    print("final", len(sand_pebbles))
+
+solve_part_2()
+
