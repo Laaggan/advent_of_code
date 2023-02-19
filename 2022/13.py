@@ -1,7 +1,7 @@
 from functools import reduce
 
-
 data = open("data/13_small_data.txt", 'r').read()
+data = open("data/13_real_data.txt", 'r').read()
 
 data = [x.split("\n") for x in data.split("\n\n")]
 parsed_data=[]
@@ -30,9 +30,7 @@ def parse_brackets(member):
                 c = member[i]
             intermediate_result.append(int(number))
             number = ''
-    
     i = 0
-    # TODO: fix extra bracket in a nicer way
     return intermediate_result[0]
 
 def is_list_of_ints(list):
@@ -44,8 +42,6 @@ def compare(left, right):
     right_list_size = len(right)
     left_list_size = len(left)
     state = None
-    # right_is_list_of_ints = is_list_of_ints(right)
-    # left_is_list_of_ints = is_list_of_ints(left)
 
     while j < min(right_list_size, left_list_size):
         if type(left[j]) is int and type(right[j]) is int:
@@ -81,5 +77,4 @@ for j, datum in enumerate(data):
     
     if compare(left, right):
         result += j + 1
-
 print(result)
