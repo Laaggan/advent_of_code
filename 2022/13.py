@@ -43,6 +43,7 @@ def compare(left, right):
     j = 0
     right_list_size = len(right)
     left_list_size = len(left)
+    state = None
     # right_is_list_of_ints = is_list_of_ints(right)
     # left_is_list_of_ints = is_list_of_ints(left)
 
@@ -65,10 +66,7 @@ def compare(left, right):
             if state != None:
                     return state
             j += 1
-            # if (left_list_size == 1):
-            #     compare(left[0], right[0])
-            # elif (right_list_size == 1):
-            #     compare(left[0], right[0])
+
     if right_list_size == left_list_size:
         return None
     elif right_list_size < left_list_size:
@@ -76,8 +74,12 @@ def compare(left, right):
     elif right_list_size > left_list_size:
         return True
 
-for datum in data:
+result = 0
+for j, datum in enumerate(data):
     left = parse_brackets(datum[0])
     right = parse_brackets(datum[1])
-    j=0
-    print(compare(left, right))
+    
+    if compare(left, right):
+        result += j + 1
+
+print(result)
