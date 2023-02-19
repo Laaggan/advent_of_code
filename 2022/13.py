@@ -36,7 +36,6 @@ def parse_brackets(member):
 def is_list_of_ints(list):
     return reduce(lambda a, b: type(a) is int and b, list)
 
-# j = 0
 def compare(left, right):
     j = 0
     right_list_size = len(right)
@@ -70,11 +69,33 @@ def compare(left, right):
     elif right_list_size > left_list_size:
         return True
 
-result = 0
-for j, datum in enumerate(data):
-    left = parse_brackets(datum[0])
-    right = parse_brackets(datum[1])
-    
-    if compare(left, right):
-        result += j + 1
-print(result)
+def solution_part_1():
+    result = 0
+    for j, datum in enumerate(data):
+        left = parse_brackets(datum[0])
+        right = parse_brackets(datum[1])
+
+        if compare(left, right):
+            result += j + 1
+    print(result)
+
+def solution_part_2():
+    flat_data = []
+    for j, datum in enumerate(data):
+        left = parse_brackets(datum[0])
+        right = parse_brackets(datum[1])
+        flat_data.append(left)
+        flat_data.append(right)
+    flat_data.append([[2]])
+    flat_data.append([[6]])
+
+    result = []
+    for j, current in enumerate(flat_data):
+        partial_result = []
+        for k, other in enumerate(flat_data):
+            if (j != k):
+                partial_result.append(not compare(current, other))
+        result.append(sum(partial_result))
+    print(reduce(lambda a,b: (a+1)*(b+1), result[-2:]))
+
+solution_part_2()
