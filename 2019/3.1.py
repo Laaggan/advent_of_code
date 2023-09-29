@@ -55,6 +55,18 @@ for point in point_result[1]:
     ys.append(point[1])
 plt.plot(xs, ys, c="blue")
 
+def determine_if_line_segments_crosses(point1, point2, point3, point4, crosses):
+    min_x = min(point1[0], point2[0])
+    max_x = max(point1[0], point2[0])
+
+    min_y = min(point3[1], point4[1])
+    max_y = max(point3[1], point4[1])
+
+    if (point3[0] >= max_x or point3[0] <= min_x or point1[1] <= min_y or point1[1] >= max_y):
+        return crosses
+    crosses.add((point3[0], point1[1]))
+    return crosses
+
 crosses = set()
 for line_segment1 in line_segments_1:
     point1, point2 = line_segment1
@@ -67,26 +79,9 @@ for line_segment1 in line_segments_1:
             continue
 
         if (is_horizontal_1):
-            # This could be a function
-            min_x = min(point1[0], point2[0])
-            max_x = max(point1[0], point2[0])
-
-            min_y = min(point3[1], point4[1])
-            max_y = max(point3[1], point4[1])
-
-            if (point3[0] >= max_x or point3[0] <= min_x or point1[1] <= min_y or point1[1] >= max_y):
-                continue
-            crosses.add((point3[0], point1[1]))
+            crosses = determine_if_line_segments_crosses(point1, point2, point3, point4, crosses)
         else:
-            min_x = min(point3[0], point4[0])
-            max_x = max(point3 [0], point4[0])
-
-            min_y = min(point1[1], point2[1])
-            max_y = max(point1[1], point2[1])
-            
-            if (point1[0] >= max_x or point1[0] <= min_x or point3[1] <= min_y or point3[1] >= max_y):
-                continue
-            crosses.add((point1[0], point3[1]))
+            crosses = determine_if_line_segments_crosses(point3, point4, point1, point2, crosses)
 
 for cross in crosses:
     plt.scatter(cross[0], cross[1])
@@ -94,6 +89,6 @@ for cross in crosses:
 
 distances = [abs(cross[0]) + abs(cross[1]) for cross in crosses]
 print(min(distances))
-idx_min = min(enumerate(distances), key=lambda x:x[1])[0]
-print(sum(map(abs, list(crosses)[idx_min])))
+# idx_min = min(enumerate(distances), key=lambda x:x[1])[0]
+# print(sum(map(abs, list(crosses)[idx_min])))
         
