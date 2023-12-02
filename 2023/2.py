@@ -23,17 +23,39 @@ max_values = dict({
     "blue": 14
 })
 
-result = set()
-for i, game in enumerate(games):
-    index = i + 1
-    possible = True
-    for draw in game:
-        for value in draw:
-            number = int(value[0])
-            color = value[1]
-            if number > max_values[color]:
-                possible = False
-    if possible:
-        result.add(index)
+def solution_part_1(data):
+    result = set()
+    for i, game in enumerate(games):
+        index = i + 1
+        possible = True
+        for draw in game:
+            for value in draw:
+                number = int(value[0])
+                color = value[1]
+                if number > max_values[color]:
+                    possible = False
+        if possible:
+            result.add(index)
+    print(sum(result))
 
-print(sum(result))
+def solution_part_2(data):
+    result = []
+    for i, game in enumerate(games):
+        index = i + 1
+        max_red = 0
+        max_green = 0
+        max_blue = 0
+        for draw in game:
+            for value in draw:
+                number = int(value[0])
+                color = value[1]
+                if color == 'red' and number > max_red:
+                    max_red = number
+                elif color == 'green' and number > max_green:
+                    max_green = number
+                elif color == 'blue' and number > max_blue:
+                    max_blue = number
+        result.append(max_red*max_green*max_blue)
+    print(sum(result))
+
+solution_part_2(data)
