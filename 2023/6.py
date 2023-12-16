@@ -6,6 +6,9 @@ Distance:  9  40  200'''
 data = '''Time:        44     89     96     91
 Distance:   277   1136   1890   1768'''
 
+data = '''Time:        44899691
+Distance:   277113618901768'''
+
 data = data.split("\n")
 times = list(map(int, data[0].split()[1:]))
 distances = list(map(int, data[1].split()[1:]))
@@ -13,9 +16,6 @@ distances = list(map(int, data[1].split()[1:]))
 result = []
 for total_time, distance in zip(times, distances): 
     a = 1
-    # total_time = times[1]
-    # distance = distances[1]
-
     number = 0
     for charging_time in range(1, total_time):
         velocity = a*charging_time
