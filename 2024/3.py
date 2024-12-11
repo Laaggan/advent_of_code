@@ -1,4 +1,4 @@
-data = open("data/3.txt", 'r').read()
+data = open("2024/data/3.txt", 'r').read()
 
 digits = set(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
 sequence_ind = 0
@@ -69,6 +69,31 @@ def calculate_sum(data):
             sequence_ind = 0
     print(total_sum)
 
+def find_do_and_dont(data):
+    i = 0
+    sequence_ind = 0
+    on = True
+    indices_to_keep = [0]
+    while i < len(data):
+        if data[i:i+len("do()")] == "do()":
+            if not on:
+                indices_to_keep.append(i)
+            on = True
+        elif data[i:i+len("don't()")] == "don't()":
+            if on:
+                indices_to_keep.append(i)
+            on = False
+        i += 1
+    
+    if len(indices_to_keep) % 2 != 0:
+        indices_to_keep.append(len(data)-1)
+
+    new_data = ""
+    for i in range(0, len(indices_to_keep), 2):
+        new_data += data[indices_to_keep[i]:indices_to_keep[i+1]]
+    return new_data
+            
+data = find_do_and_dont(data)
 calculate_sum(data)
 
         
