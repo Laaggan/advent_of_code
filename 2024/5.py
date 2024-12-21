@@ -1,3 +1,4 @@
+from collections import defaultdict
 from math import floor
 
 
@@ -5,23 +6,27 @@ data = open("2024/data/5.txt", 'r').read()
 
 rules, updates = data.split("\n\n")
 
-rules = [x.split("|") for x in rules.split("\n")]
-updates = [x.split(",") for x in updates.split("\n")]
+rules = [x.split("|") for x in rules.splitlines()]
+updates = [x.split(",") for x in updates.splitlines()]
 
-priorities = {}
+priorities = defaultdict(list)
 for value, rule in rules:
-    if value in priorities.keys():
-        value_set = priorities[value]
-        value_set.add(rule)
-        priorities[value] = value_set
-    else:
-        priorities[value] = set([rule])
+    priorities[value].append(rule)
 
 result = []
+sum1 = 0
+sum2 = 0
 for update in updates:
     not_allowed = set()
     seen = set()
     succesful = True
+    
+    sorted_update = sorted(update, key=lambda page: -len([order for order in priorities[page] if order in update]))
+    if sorted_update == update:
+        sum1 += int(sorted_update[len(sorted_update) // 2])
+    else:
+        sum2 += int(sorted_update[len(sorted_update) // 2])
+
     for page_number in update:
         if page_number in priorities.keys():
             not_allowed_before = priorities[page_number]
@@ -39,6 +44,8 @@ for update in updates:
     if succesful:
         result.append(True)
 
+    
+
 sum = 0
 for i in range(len(result)):
     if result[i]:
@@ -47,4 +54,5 @@ for i in range(len(result)):
     else:
         continue
 
-print(sum)
+print(sum1)
+print(sum2)
