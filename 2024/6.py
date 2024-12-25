@@ -1,4 +1,7 @@
-data = open("2024/data/6.txt", 'r').read()
+import copy
+
+
+data = open("2024/data/6_test.txt", 'r').read()
 data = [[c for c in row] for row in data.splitlines()]
 
 def find_startpoint(data):
@@ -6,6 +9,22 @@ def find_startpoint(data):
         for j, c in enumerate(row):
             if c == "^":
                 return (i, j)
+
+def find_obstructions(data):
+    result = []
+    for i, row in enumerate(data):
+        for j, c in enumerate(row):
+            if c == "#":
+                result.append((i, j))
+    return result
+
+def find_not_obstruction(data):
+    result = []
+    for i, row in enumerate(data):
+        for j, c in enumerate(row):
+            if c == ".":
+                result.append((i, j))
+    return result
             
 row,col = find_startpoint(data)
 
@@ -41,24 +60,110 @@ def calculate_next_position(row, col, current_direction, data):
     
     return (new_row, new_col, current_direction, terminated)
 
-terminated = False
-current_direction = 'UP'
-visited_positions = set()
-visited_positions.add((row, col))
-mod_data = data
-while not terminated:
-    new_row, new_col, current_direction, terminated = calculate_next_position(row, col, current_direction, data)
-    
-    if not terminated:
-        visited_positions.add((new_row, new_col))
-        mod_data[new_row][new_col] = "X"
-        row, col = new_row, new_col
-    
-for x in mod_data:
-    print(str.join("", x))
-    print("\n")
+def solve_part_1(row, col):
+    terminated = False
+    current_direction = 'UP'
+    visited_positions = set()
+    visited_positions.add((row, col))
+    mod_data = copy.deepcopy(data)
+    while not terminated:
+        new_row, new_col, current_direction, terminated = calculate_next_position(row, col, current_direction, data)
+        
+        if not terminated:
+            visited_positions.add((new_row, new_col))
+            mod_data[new_row][new_col] = "X"
+            row, col = new_row, new_col
+        
+    for x in mod_data:
+        print(str.join("", x))
+        print("\n")
+    return visited_positions
 
-print(len(visited_positions))
+# Using modulo of the index in this list should be nice
+DIRECTION_CHAIN = ["UP", "RIGHT", "DOWN", "LEFT"]
+
+def check_for_loop(check_row, check_col, loop_positions, dir_index):
+    current_direction = DIRECTION_CHAIN[dir_index]
+    prev_direction = current_direction
+    next_row, next_col = check_row, check_col
+    change_count = 0
+    terminated = False
+    mod_data = copy.deepcopy(data)
+    if next_row >= 0 and next_col >= 0 and next_row < len(mod_data) and next_col < len(mod_data[0]):
+        mod_data[next_row][next_col] = "O"
+
+    while not terminated:
+        next_row, next_col, current_direction, terminated = calculate_next_position(next_row, next_col, current_direction, data)
+        for x in mod_data:
+                print(str.join("", x))
+        print("\n")
+        
+        if not terminated: # just for debugging
+            mod_data[next_row][next_col] = "|"
+
+        if terminated:
+            return loop_positions
+        elif not terminated and current_direction != prev_direction:
+            expected_direction = DIRECTION_CHAIN[(dir_index + 1) % len(DIRECTION_CHAIN)]
+            # print("NO LOOP:", check_row, check_col)
+            # for x in mod_data:
+            #     print(str.join("", x))
+            # print("\n")
+            if current_direction != expected_direction:
+                return loop_positions
+            else:
+                dir_index += 1
+                change_count += 1
+                prev_direction = current_direction
+                if change_count == 4:
+                    # print("NO LOOP:")
+                    # for x in mod_data:
+                    #     print(str.join("", x))
+                    # print("\n")
+                    return loop_positions
+    
+        if change_count == 3 and next_row == check_row and next_col == check_col:
+            print("FOUND LOOP:", next_row, next_col)
+            mod_data[check_row][check_col] = "^"
+            for x in mod_data:
+                print(str.join("", x))
+            print("\n")
+            loop_positions.add((check_row, check_col))
+            return loop_positions
+    
+    return loop_positions
+
+def solve_part_2():
+    # all_obstructions = find_not_obstruction(data)
+    # all_obstructions = [(6,3), (7,6), (7,7), (8,1), (8,3), (9,7)]
+    all_obstructions = [(8,3)]
+    loop_positions = set()
+    for obstruction in all_obstructions:
+        print("placement", obstruction)
+        # guard to right of obstrcution going up
+        dir_index = 0
+        row, col = obstruction[0], obstruction[1] + 1
+        loop_positions = check_for_loop(row, col, loop_positions, dir_index)
+
+        # Guard below obstruction going left
+        dir_index = 1
+        row, col = obstruction[0] + 1, obstruction[1]
+        loop_positions = check_for_loop(row, col, loop_positions, dir_index)
+        
+        # Guard left of obstruction going down
+        dir_index = 2
+        row,col = obstruction[0], obstruction[1] -1
+        loop_positions = check_for_loop(row, col, loop_positions, dir_index)
+        
+        # Guard above obstruction going to the right
+        dir_index = 3
+        row,col = obstruction[0] - 1, obstruction[1]
+        loop_positions = check_for_loop(row, col, loop_positions, dir_index)
+    return loop_positions
+    
+
+# print(len(solve_part_1(row, col)))
+print(len(solve_part_2()))
     
 
         
