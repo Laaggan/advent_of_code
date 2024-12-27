@@ -84,6 +84,7 @@ DIRECTION_CHAIN = ["UP", "RIGHT", "DOWN", "LEFT"]
 
 def check_for_loop(check_row, check_col, loop_positions, dir_index):
     current_direction = DIRECTION_CHAIN[dir_index]
+    original_direction = current_direction
     prev_direction = current_direction
     next_row, next_col = check_row, check_col
     change_count = 0
@@ -104,42 +105,26 @@ def check_for_loop(check_row, check_col, loop_positions, dir_index):
         if terminated:
             return loop_positions
         elif not terminated and current_direction != prev_direction:
-            expected_direction = DIRECTION_CHAIN[(dir_index + 1) % len(DIRECTION_CHAIN)]
-            # print("NO LOOP:", check_row, check_col)
+            # expected_direction = DIRECTION_CHAIN[(dir_index + 1) % len(DIRECTION_CHAIN)]
+            dir_index += 1
+            change_count += 1
+            prev_direction = current_direction
+    
+        if next_row == check_row and next_col == check_col and original_direction == current_direction:
+            print("FOUND LOOP:", next_row, next_col)
+            # print("CHANGE COUNT:", change_count % 3)
+            # mod_data[check_row][check_col] = "^"
             # for x in mod_data:
             #     print(str.join("", x))
             # print("\n")
-            if current_direction != expected_direction:
-                return loop_positions
-            else:
-                dir_index += 1
-                change_count += 1
-                prev_direction = current_direction
-                if change_count == 4:
-                    # print("NO LOOP:")
-                    # for x in mod_data:
-                    #     print(str.join("", x))
-                    # print("\n")
-                    return loop_positions
-    
-        if change_count == 3 and next_row == check_row and next_col == check_col:
-            print("FOUND LOOP:", next_row, next_col)
-            mod_data[check_row][check_col] = "^"
-            for x in mod_data:
-                print(str.join("", x))
-            print("\n")
             loop_positions.add((check_row, check_col))
             return loop_positions
-    
-    return loop_positions
 
 def solve_part_2():
-    # all_obstructions = find_not_obstruction(data)
-    # all_obstructions = [(6,3), (7,6), (7,7), (8,1), (8,3), (9,7)]
-    all_obstructions = [(8,3)]
+    all_obstructions = find_not_obstruction(data)
     loop_positions = set()
     for obstruction in all_obstructions:
-        print("placement", obstruction)
+        # print("placement", obstruction)
         # guard to right of obstrcution going up
         dir_index = 0
         row, col = obstruction[0], obstruction[1] + 1
