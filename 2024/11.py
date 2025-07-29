@@ -1,4 +1,4 @@
-import copy
+from collections import defaultdict
 from math import floor
 
 data = "0 1 10 99 999"
@@ -6,28 +6,36 @@ data = "125 17"
 data = "2 72 8949 0 981038 86311 246 7636740"
 data = data.split(" ")
 
-NUM_BLINKS = 25
+NUM_BLINKS = 75
+
+
+result = defaultdict(int)
+for stone in data:
+    result[stone] += 1
 
 for _ in range(NUM_BLINKS):
-    new_data = copy.deepcopy(data)
-    i = 0
-    while i < len(new_data):
-        stone = new_data[i]
-
+    updates = defaultdict(int)
+    for stone, num_stones in result.items():
         if stone == "0":
-            new_data[i] = "1"
+            updates["1"] += num_stones
         elif len(stone) % 2 == 0:
             middle_stone = floor(len(stone)/2)
             left = str(int(stone[:middle_stone]))
             right = str(int(stone[middle_stone:]))
 
-            # middle_sequence = floor(len(new_data)/2)
-            new_data = [*new_data[:i], left, right, *new_data[i+1:]]
-            i += 1
+            updates[left] += num_stones
+            updates[right] += num_stones
         else:
-            new_data[i] = str(int(stone)*2024)
+            updates[str(int(stone)*2024)] += num_stones
         
-        i += 1
-    data = new_data
+        # A stone will never not be transformed so we can safely always remove 1
+        updates[stone] -= num_stones
+    
+    for update_key, update_value in updates.items():
+        result[update_key] += update_value
 
-print(len(data))
+sum = 0
+for value in result.values():
+    sum += value
+
+print(sum)
