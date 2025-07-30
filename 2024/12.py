@@ -1,4 +1,5 @@
 from collections import defaultdict
+import copy
 
 data = '''AAAA
 BBCD
@@ -61,35 +62,67 @@ data = data.split("\n")
 
 # print(areas)
 
+class Interval:
+    def __init__(self, character, row, start, end):
+        self.character = character
+        self.row = row
+        self.start = start
+        self.end = end
+        self.parents = []
+        self.children = []
+    
+    def __str__(self):
+        return "Character: " +  self.character + ", Row: " + str(self.row) + ", Start: " + str(self.start) + ", End: " + str(self.end) + "\n Parents: " + str(self.parents) + "\n Children: " + str(self.children)
+
+    def add_child(self, interval):
+        self.children.append(interval)
+    
+    def add_parent(self, interval):
+        self.parents.append(interval)
+
+
 previous_intervals = None
 region_interator = 0
-result = defaultdict(list)
-for i, row in enumerate(data[:2]):
-    intervals = []
+result = [[] for _ in range(len(data))] # As many empty lists as rows
+
+intervals = []
+for i, row in enumerate(data):
     start, end = 0, 0
     for j, c in enumerate(row):
-        if j == len(row) - 1 or (j + 1 < len(row) - 1 and row[j + 1] != c):
+        if j == len(row) - 1 or (j + 1 <= len(row) - 1 and row[j + 1] != c):
             end = j
-            intervals.append((c, start, end))
+            intervals.append(Interval(c, i, start, end))
+            result[i].append(Interval(c, i, start, end))
             start = j + 1
     
-    if previous_intervals is None:
-        # If first time just set previous_intervals
-        # for c, start, end in intervals:
-        #     result[c] = [(i, start, end)]
-        previous_intervals = intervals
+    if i != 0:
+        for v, interval1 in enumerate(result[i-1]):
+            for q, interval2 in enumerate(result[i]):
+                if interval1.character == interval2.character and not (interval1.start > interval2.end or interval1.end < interval2.start):
+                    # If we have a match we want to set children to
+                    interval1.add_child(interval2)
+                    interval2.add_parent(interval1)
+
+# for row in result:
+#     for interval in row:
+#         print(interval)
+
+region_counter = 0
+seen = set()
+def count_area(interval):
+    if (len(interval.parents) > 0):
+        for parent in interval.parents:
+            if parent not in seen:
+                intermediate_sum += count_area(parent)
+    if (len(interval.children) > 0):
+        for child in interval.children:
+            if child not in seen:
+                intermediate_sum += count_area(child)
     else:
-        # Merge
-        already_merged = [False for _ in range(len(intervals))]
-        for c1, start1, end1 in previous_intervals:
-            for q, (c2, start2, end2) in enumerate(intervals):
-                if c1 == c2 and not (start1 > end2 or end1 < start2):
-                    if already_merged[q]:
-                        result[c1].append((c2, start2, end2))
-                    else:
-                        already_merged[q] = True
-                        # In this case it shall be added to some other region if it is disjoint
-                        result[c1]
+        region_counter += 1
+        return interval.end - interval.start
+
+for row in result:
+    for interval in row:
 
 
-print(result)
