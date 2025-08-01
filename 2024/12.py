@@ -6,61 +6,23 @@ BBCD
 BBCC
 EEEC'''
 
-data = '''AACA
-BAAA
-BCAC'''
+# data = '''AACA
+# BAAA
+# BCAC'''
 
+data = '''RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE'''
+
+# data = open("2024/data/12.txt").read()
 data = data.split("\n")
-
-# region_counter = 0
-# areas=defaultdict(set)
-# symbols=defaultdict(str)
-# perimeters=defaultdict(set)
-# i, j = 0, 0
-# N, M = len(data), len(data[0])
-# continuation_index = [0 for _ in range(len(data))]
-
-# def determine_perimeter(c, i, j):
-#     pass
-
-# while True:
-#     current_symbol = data[i][j]
-#     symbols[region_counter] = current_symbol
-    
-#     # Add perimeter when out of bounds
-#     if i - 1 < 0:
-#         perimeters[region_counter].add((i - 1, j))
-#     elif i + 1 > N - 1:
-#         perimeters[region_counter].add((i + 1, j))
-#     if j - 1 < 0:
-#         perimeters[region_counter].add((i, j - 1))
-#     elif j + 1 > M - 1:
-#         perimeters[region_counter].add((i, j + 1))
-    
-#     # Row handling
-#     if i - 1 >= 0 and current_symbol != data[i - 1][j]:
-#         perimeters[region_counter].add((i - 1, j))
-#     elif i - 1 >= 0 and current_symbol == data[i - 1][j]:
-#         areas[region_counter].add((i - 1, j))
-#     if i + 1 <= N - 1 and current_symbol != data[i + 1][j]:
-#         perimeters[region_counter].add((i + 1, j))
-#     elif i + 1 <= N - 1 and current_symbol == data[i + 1][j]:
-#         areas[region_counter].add((i + 1, j))
-    
-#     # Column handling
-#     if j - 1 >= 0 and current_symbol != data[i][j - 1]:
-#         perimeters[region_counter].add((i, j - 1))
-#     elif j - 1 >= 0 and current_symbol == data[i][j - 1]:
-#         areas[region_counter].add((i, j - 1))
-    
-#     if j + 1 <= M - 1 and current_symbol != data[i][j + 1]:
-#         perimeters[region_counter].add((i, j + 1))
-#         # If the next one is not the same we should go to next row and keep track of what column on current row we ended at
-#         restart = j + 1
-#     elif j + 1 <= M - 1 and current_symbol == data[i][j + 1]:
-#         areas[region_counter].add((i, j + 1))
-
-# print(areas)
 
 class Interval:
     def __init__(self, character, row, enumeration, start, end):
@@ -128,6 +90,30 @@ def count_area(interval, intermediate_sum, seen):
     
     return interval.end - interval.start + 1 + intermediate_sum + parent_contribution + child_contribution
 
+def count_perimeter(interval, previous_interval, intermediate_sum, seen):
+    if interval.enumeration in seen:
+        return intermediate_sum
+    else:
+        seen.add(interval.enumeration)
+    
+    child_contribution, parent_contribution = 0, 0
+    if (len(interval.parents) > 0):
+        for parent in interval.parents:
+            if parent.enumeration not in seen:
+                parent_contribution += count_perimeter(parent, interval, intermediate_sum, seen)
+    if (len(interval.children) > 0):
+        for child in interval.children:
+            if child.enumeration not in seen:
+                child_contribution += count_perimeter(child, interval, intermediate_sum, seen)
+    
+    s3 = set()
+    if (previous_interval is not None):
+        s1 = set(range(previous_interval.start, previous_interval.end + 1))
+        s2 = set(range(interval.start, interval.end + 1))
+        s3 = s1.intersection(s2)
+
+    return 2*(interval.end - interval.start + 1) + 2 - 2*len(s3) + intermediate_sum + parent_contribution + child_contribution
+
 roots = []
 for row in result:
     for root in row:
@@ -149,5 +135,20 @@ for i, root in enumerate(roots):
         print("Has already been seen")
         print(root)
 
-print(areas)
-print(true_roots)
+perimeters = [0 for _ in range(len(roots))]
+global_seen = set()
+for i, root in enumerate(roots):
+    seen = set()
+    if root.enumeration not in global_seen:
+        print(root)
+        perimeters[i] = count_perimeter(root, None, 0, seen)
+        global_seen = global_seen.union(seen)
+    else:
+        print("Has already been seen")
+        print(root)
+
+final_result = 0
+for area, perimeter in zip(areas, perimeters):
+    final_result += area*perimeter
+
+print(final_result)
