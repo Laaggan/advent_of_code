@@ -1,3 +1,7 @@
+from collections import defaultdict
+from itertools import product
+
+
 data = '''AAAA
 BBCD
 BBCC
@@ -68,16 +72,32 @@ for (point, value) in grid.items():
     seen |= region
 
 result = 0
+side_result = 0
+perimeters = dict()
+sides = defaultdict(int)
 for region in regions:
     region_perimeter = 0
     region_area = len(region)
+    region_corners = 0
     for point in region:
         neighbours = check_neighbourhood(data, point[0], point[1])
         region_perimeter += 4 - len(neighbours)
+
+        for row_offset, col_offset in product([1, -1], repeat=2):
+            row_neighbour = (point[0] + row_offset, point[1])
+            column_neighbour = (point[0], point[1] + col_offset)
+            diagonal_neighbour = (point[0] + row_offset, point[1] + col_offset)
+
+            if row_neighbour not in region and column_neighbour not in region:
+                sides[region] += 1
+            
+            if row_neighbour in region and column_neighbour in region and diagonal_neighbour not in region:
+                sides[region] += 1
     
+    perimeters[region] = region_perimeter
+
     result += region_area*region_perimeter
+    side_result += sides[region]*len(region)
 
 print(result)
-    
-
-
+print(side_result)
