@@ -9,13 +9,23 @@ result = []
 for pair in data:
     for i in range(pair[0], pair[1] + 1):
         c_str = str(i)
-        # then we need to identify mirrored sequences
-        # first check is that the number contains a even number of digits
-        if len(c_str) % 2 != 0:
-            continue
-         
+        
+        # middle is max mirror
         middle = len(c_str) // 2
-        if c_str[:middle] == c_str[middle:]:
-            result.append(i)
-
-print(sum(result))
+        
+        for j in range(1, middle + 1):
+            # if string is not divisible by a sequence length it cannot be mirror
+            if len(c_str) % j != 0:
+                continue
+            num_patterns = len(c_str) // j
+            pattern = c_str[:j]
+            is_mirror = True
+            for pos in range(1, num_patterns):
+                if pattern != c_str[(pos*j):((pos+1)*j)]:
+                    is_mirror = False
+                    break
+            
+            if is_mirror:
+                result.append(i)
+                
+print(sum(set(result)))
