@@ -1,3 +1,5 @@
+import copy
+
 data = '''..@@.@@@@.
 @@@.@.@.@@
 @@@@@.@.@@
@@ -16,7 +18,8 @@ def pretty_print_character_matrix(character_matrix):
 
 data_result = [[c for c in x] for x in data.split("\n")]
 neigh_vis = [[c for c in x] for x in data.split("\n")]
-data = data.split("\n")
+# data = data.split("\n")
+data = [[c for c in x] for x in data.split("\n")]
 
 NEIGHBOURHOOD = [(1,0),(1,1),(1,-1),
                  (0,1),(0,-1),
@@ -41,17 +44,25 @@ def is_paper_roll_accessible(data, row, col):
     return result < 4
 
 total_result = 0
-for i in range(N):
-# for i in range(1, 2):
-    for j in range(M):
-    # for j in range(8, 9):
-        if data[i][j] == "@":
-            # Is paper roll
-            if is_paper_roll_accessible(data, i, j):
-                data_result[i][j] = "x"
-                total_result += 1
-        else:
-            continue
+intermediate_result = 1 # just to initialize the while loop
+pretty_print_character_matrix(data)
+while intermediate_result != 0:
+    intermediate_result = 0
+    mod_data = copy.deepcopy(data)
+    for i in range(N):
+    # for i in range(1, 2):
+        for j in range(M):
+        # for j in range(8, 9):
+            if data[i][j] == "@":
+                # Is paper roll
+                if is_paper_roll_accessible(data, i, j):
+                    mod_data[i][j] = "."
+                    intermediate_result += 1
+            else:
+                continue
+    data = mod_data
+    total_result += intermediate_result
+    # pretty_print_character_matrix(data)
 
-pretty_print_character_matrix(data_result)
+# pretty_print_character_matrix(data_result)
 print(total_result)
