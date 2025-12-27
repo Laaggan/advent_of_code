@@ -39,25 +39,19 @@ def calc_dist(p1, p2):
     return result
 distances = []
 for i in range(len(boxes)):
-    # print(i)
     for j in range(i+1, len(boxes)):
         dist = calc_dist(boxes[i], boxes[j])
         distances.append((i, j, dist))
 
 distances.sort(key=lambda x: x[2]) # sort on distance
-# print("should be 20^2", len(distances), 20**2)
-# print(distances)
-adjacency = [[0 for _ in range(len(boxes))] for _ in range(len(boxes))]
 
-for distance in distances[:NUM_DISTANCES]:
-    # print("dist:", distance)
-    # print("boxes:", boxes[distance[0]], boxes[distance[1]])
-    adjacency[distance[0]][distance[1]] = 1
-    adjacency[distance[1]][distance[0]] = 1 # Do I need both pairs here?
+def create_adjacency_matrix(num_nodes: int, distances: list[int]):
+    adjacency = [[0 for _ in range(num_nodes)] for _ in range(num_nodes)]
+    for distance in distances:
+        adjacency[distance[0]][distance[1]] = 1
+        adjacency[distance[1]][distance[0]] = 1 # Do I need both pairs here? Yes!
+    return adjacency
 
-# pretty_print_number_matrix(adjacency)
-
-# Then we can recursively build the sub graphs?
 def calculate_group(adjacency:list[list[int]], incoming: list[int], group: set[int], seen: set[int]):
     for idx, neigh in enumerate(incoming):
         if neigh == 0:
@@ -80,30 +74,46 @@ def debug_groups(boxes, group):
         out += f"(idx: {idx}, point: {boxes[idx]}), "
     print(out)
 
-groups = []
-seen = set()
-for i, row in enumerate(adjacency):
-    # print("idx: ", i, [i for i, v in enumerate(row) if v > 0], f"({sum(row)})")
-    if not any(row):
-        continue
-    if i in seen:
-        continue
-    group = set()
-    seen.add(i)
-    group.add(i)
-    group = calculate_group(adjacency, row, group, seen)
-    # debug_groups(boxes, group)
-    groups.append(group)
+def part1(adjacency, calculate_group):
+    groups = []
+    seen = set()
+    for i, row in enumerate(adjacency):
+        if not any(row):
+            continue
+        if i in seen:
+            continue
+        group = set()
+        seen.add(i)
+        group.add(i)
+        group = calculate_group(adjacency, row, group, seen)
+        groups.append(group)
 
-# print(groups)
-result = list(map(len, groups))
-result.sort(reverse=True)
-print(result)
+    result = list(map(len, groups))
+    result.sort(reverse=True)
+    return result
+ 
+def update_adjacency(adjacency, distance):
+    adjacency[distance[0]][distance[1]] = 1
+    adjacency[distance[1]][distance[0]] = 1
 
-final_result = 1
-for x in result[:3]:
-    final_result *= x
+# part 2
+result2 = [None] #dummy value
+i = NUM_DISTANCES + 1
+adjacency2 = create_adjacency_matrix(len(boxes), distances[:NUM_DISTANCES])
+while result2[0] != len(boxes):
+    potential_solution = distances[i]
+    update_adjacency(adjacency2, distances[i])
+    i += 1
+    result2 = part1(adjacency2, calculate_group)
+    print(i, result2)
 
-print(final_result)
+print(boxes[potential_solution[0]][0]*boxes[potential_solution[1]][0])
+# part 1
+# adjacency = create_adjacency_matrix(len(boxes), distances[:NUM_DISTANCES])
+# result = part1(adjacency, calculate_group)
+# final_result = 1
+# for x in result[:3]:
+#     final_result *= x
+# print(final_result)
 
 # 48 is not correct
